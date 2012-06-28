@@ -1559,7 +1559,12 @@ static int snd_hdj_chip_free(struct snd_hdj_chip *chip)
 
 	if(chip->ctrl_req_buffer != NULL)
 	{
-		usb_buffer_free(chip->dev,
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) )
+		usb_free_coherent(
+#else
+		usb_buffer_free(
+#endif
+				chip->dev,
 				chip->ctrl_urb->transfer_buffer_length,
 				chip->ctrl_req_buffer,
 				chip->ctrl_urb->transfer_dma);
@@ -1575,7 +1580,12 @@ static int snd_hdj_chip_free(struct snd_hdj_chip *chip)
 	
 	if(chip->ctl_req != NULL)
 	{
-		usb_buffer_free(chip->dev,
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) )
+		usb_free_coherent(
+#else
+		usb_buffer_free(
+#endif
+			chip->dev,
 			sizeof(*(chip->ctl_req)),
 			chip->ctl_req,
 			chip->ctl_req_dma);
@@ -1736,7 +1746,13 @@ static int snd_hdj_chip_create(struct usb_device *dev,
 	}
 
 	/* allocate memory for setup packet for our control requests */
-	chip->ctl_req = usb_buffer_alloc(chip->dev, 
+	chip->ctl_req =
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) )
+		usb_alloc_coherent(
+#else
+		usb_buffer_alloc(
+#endif
+					 chip->dev, 
 					 sizeof(*(chip->ctl_req)),
 					 GFP_KERNEL, 
 					 &chip->ctl_req_dma);
@@ -1751,7 +1767,13 @@ static int snd_hdj_chip_create(struct usb_device *dev,
 
 	chip->ctrl_req_buffer_len =  sizeof(u16);
 	chip->ctrl_urb->transfer_buffer_length = chip->ctrl_req_buffer_len;
-	chip->ctrl_req_buffer = usb_buffer_alloc(chip->dev, 
+	chip->ctrl_req_buffer = 
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) )
+		usb_alloc_coherent(
+#else
+		usb_buffer_alloc(
+#endif
+						 chip->dev, 
 						 chip->ctrl_urb->transfer_buffer_length,
 						 GFP_KERNEL, 
 						 &chip->ctrl_urb->transfer_dma);

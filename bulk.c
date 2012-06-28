@@ -462,7 +462,7 @@ int send_vendor_request(int chip_index, u32 bmRequestIn, u32 bmRequest, u16 valu
 
 	chip->ctrl_urb->setup_dma = chip->ctl_req_dma;
 	/* NOTE: transfer_dma setup above in call to usb_buffer_alloc() */
-	chip->ctrl_urb->transfer_flags = URB_NO_SETUP_DMA_MAP | URB_NO_TRANSFER_DMA_MAP;
+	chip->ctrl_urb->transfer_flags = URB_NO_TRANSFER_DMA_MAP;
 
 	ret = hdjbulk_submit_urb(chip, chip->ctrl_urb, GFP_KERNEL);
 	if (ret!=0) {
@@ -553,7 +553,7 @@ int usb_set_report(struct usb_hdjbulk *ubulk, u8 type, u8 id)
 				output_control_callback,
 				&ubulk->output_control_completion);
 	ubulk->output_control_urb->setup_dma = ubulk->output_control_dma;
-	ubulk->output_control_urb->transfer_flags = URB_NO_SETUP_DMA_MAP | URB_NO_TRANSFER_DMA_MAP;
+	ubulk->output_control_urb->transfer_flags = URB_NO_TRANSFER_DMA_MAP;
 	if ((rc =  hdjbulk_submit_urb(ubulk->chip,ubulk->output_control_urb, GFP_KERNEL))!=0) {
 		printk(KERN_WARNING"%s hdjbulk_submit_urb() failed, rc:%d\n",__FUNCTION__,rc);
 	} else {
@@ -2675,7 +2675,12 @@ static void uninit_output_control_state(struct usb_hdjbulk *ubulk)
 {
 	if (ubulk->chip->product_code!=DJCONTROLSTEEL_PRODUCT_CODE) {
 		if (ubulk->output_control_ctl_req!=NULL && ubulk->control_interface!=NULL) {
-			usb_buffer_free(interface_to_usbdev(ubulk->control_interface),
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) )
+		usb_free_coherent(
+#else
+		usb_buffer_free(
+#endif
+					interface_to_usbdev(ubulk->control_interface),
 					sizeof(*(ubulk->output_control_ctl_req)),
 					ubulk->output_control_ctl_req,
 					ubulk->output_control_dma);
@@ -2684,7 +2689,12 @@ static void uninit_output_control_state(struct usb_hdjbulk *ubulk)
 
 		if (ubulk->output_control_buffer!=NULL && ubulk->control_interface!=NULL &&
 		    ubulk->output_control_urb!=NULL) {
-			usb_buffer_free(interface_to_usbdev(ubulk->control_interface),
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) )
+		usb_free_coherent(
+#else
+		usb_buffer_free(
+#endif
+					interface_to_usbdev(ubulk->control_interface),
 					ubulk->output_control_urb->transfer_buffer_length,
 					ubulk->output_control_buffer,
 					ubulk->output_control_urb->transfer_dma);
@@ -2712,7 +2722,12 @@ void kill_bulk_urbs(struct usb_hdjbulk *ubulk, u8 free_urbs)
 		usb_kill_urb(ubulk->bulk_out_urb);
 		if (free_urbs!=0) {
 			if (ubulk->bulk_out_buffer!=NULL) {
-				usb_buffer_free(ubulk->chip->dev, ubulk->bulk_out_size,
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) )
+		usb_free_coherent(
+#else
+		usb_buffer_free(
+#endif
+						ubulk->chip->dev, ubulk->bulk_out_size,
 						ubulk->bulk_out_urb->transfer_buffer,
 						ubulk->bulk_out_urb->transfer_dma);
 				ubulk->bulk_out_buffer = NULL;
@@ -3065,7 +3080,12 @@ int hdj_create_bulk_interface(struct snd_hdj_chip* chip,
 	init_MUTEX(&ubulk->bulk_out_buffer_mutex);
 	
 	ubulk->bulk_out_buffer =
-		usb_buffer_alloc(ubulk->chip->dev, ubulk->bulk_out_size,
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) )
+		usb_alloc_coherent(
+#else
+		usb_buffer_alloc(
+#endif
+			ubulk->chip->dev, ubulk->bulk_out_size,
 			GFP_KERNEL, &ubulk->bulk_out_urb->transfer_dma);
 
 	if (ubulk->bulk_out_buffer==NULL) {
@@ -3609,7 +3629,13 @@ static int init_output_control_state(struct usb_hdjbulk *ubulk)
 	 *  control state */
 	if (ubulk->chip->product_code != DJCONTROLSTEEL_PRODUCT_CODE) {	
 		/* allocate memory for setup packet for our control requests */
-		ubulk->output_control_ctl_req = usb_buffer_alloc(interface_to_usbdev(ubulk->control_interface), 
+		ubulk->output_control_ctl_req = 
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) )
+		usb_alloc_coherent(
+#else
+		usb_buffer_alloc(
+#endif
+								interface_to_usbdev(ubulk->control_interface), 
 						 		sizeof(*(ubulk->output_control_ctl_req)),
 						 		GFP_KERNEL, 
 								 &ubulk->output_control_dma);
@@ -3628,7 +3654,13 @@ static int init_output_control_state(struct usb_hdjbulk *ubulk)
 			goto hdjbulk_init_output_control_state_error;
 		}
 
-		ubulk->output_control_buffer = usb_buffer_alloc(interface_to_usbdev(ubulk->control_interface),
+		ubulk->output_control_buffer = 
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) )
+		usb_alloc_coherent(
+#else
+		usb_buffer_alloc(
+#endif
+								interface_to_usbdev(ubulk->control_interface),
 								ubulk->output_control_buffer_size, 
 								GFP_KERNEL,
 								&ubulk->output_control_urb->transfer_dma);
@@ -3773,7 +3805,13 @@ static int init_continuous_reader(struct usb_hdjbulk *ubulk)
 		}
 
 		ep[i]->max_transfer = ubulk->continuous_reader_packet_size;
-		buffer = usb_buffer_alloc(ubulk->chip->dev, ep[i]->max_transfer,
+		buffer = 
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) )
+		usb_alloc_coherent(
+#else
+		usb_buffer_alloc(
+#endif
+					ubulk->chip->dev, ep[i]->max_transfer,
 					GFP_KERNEL, &ep[i]->urb->transfer_dma);
 		if (!buffer) {
 			printk(KERN_WARNING"%s() usb_buffer_alloc() failed\n",__FUNCTION__);
@@ -4250,7 +4288,12 @@ void hdjbulk_in_endpoint_delete(struct hdjbulk_in_endpoint* ep)
 {
 	if (ep->urb) {
 		if (ep->urb->transfer_buffer) {
-			usb_buffer_free(ep->ubulk->chip->dev, ep->max_transfer,
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) )
+		usb_free_coherent(
+#else
+		usb_buffer_free(
+#endif
+					ep->ubulk->chip->dev, ep->max_transfer,
 					ep->urb->transfer_buffer,
 					ep->urb->transfer_dma);
 		}
