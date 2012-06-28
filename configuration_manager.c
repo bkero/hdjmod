@@ -26,6 +26,9 @@
 #include <linux/usb.h>
 #include <linux/version.h>	/* For LINUX_VERSION_CODE */
 #include <asm/atomic.h>
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35) )
+#include <linux/slab.h>
+#endif
 #if ( LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,24) )
 #include <sound/driver.h>
 #endif

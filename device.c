@@ -1559,7 +1559,7 @@ static int snd_hdj_chip_free(struct snd_hdj_chip *chip)
 
 	if(chip->ctrl_req_buffer != NULL)
 	{
-		usb_buffer_free(chip->dev,
+		usb_free_coherent(chip->dev,
 				chip->ctrl_urb->transfer_buffer_length,
 				chip->ctrl_req_buffer,
 				chip->ctrl_urb->transfer_dma);
@@ -1575,7 +1575,7 @@ static int snd_hdj_chip_free(struct snd_hdj_chip *chip)
 	
 	if(chip->ctl_req != NULL)
 	{
-		usb_buffer_free(chip->dev,
+		usb_free_coherent(chip->dev,
 			sizeof(*(chip->ctl_req)),
 			chip->ctl_req,
 			chip->ctl_req_dma);
@@ -1660,11 +1660,19 @@ static int snd_hdj_chip_create(struct usb_device *dev,
 		/* let the kernel option override custom id */
 		strncpy(card_id,id[idx],sizeof(card_id)-1);
 	}
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16) )
+	err = snd_card_create(index[idx], card_id/*id[idx]*/, THIS_MODULE, 0, &card );
+	if (err) {
+		snd_printk(KERN_WARNING "snd_hdj_chip_create(): cannot create card instance %d\n", idx);
+		return err;
+	}
+#else
 	card = snd_card_new(index[idx], card_id/*id[idx]*/, THIS_MODULE, 0);
 	if (card == NULL) {
 		snd_printk(KERN_WARNING "snd_hdj_chip_create(): cannot create card instance %d\n", idx);
 		return -ENOMEM;
 	}
+#endif
 	
 	/* save the index, so people who have the card can reference the chip */
 	card->private_data = (void*)(unsigned long)idx;
@@ -1728,12 +1736,12 @@ static int snd_hdj_chip_create(struct usb_device *dev,
 	}
 
 	/* allocate memory for setup packet for our control requests */
-	chip->ctl_req = usb_buffer_alloc(chip->dev, 
+	chip->ctl_req = usb_alloc_coherent(chip->dev, 
 					 sizeof(*(chip->ctl_req)),
 					 GFP_KERNEL, 
 					 &chip->ctl_req_dma);
 	if(chip->ctl_req == NULL) {
-		printk(KERN_WARNING"snd_hdj_chip_create(): usb_buffer_alloc() failed for setup DMA\n");
+		printk(KERN_WARNING"snd_hdj_chip_create(): usb_alloc_coherent() failed for setup DMA\n");
 		return err;
 	}
 	
@@ -1743,12 +1751,12 @@ static int snd_hdj_chip_create(struct usb_device *dev,
 
 	chip->ctrl_req_buffer_len =  sizeof(u16);
 	chip->ctrl_urb->transfer_buffer_length = chip->ctrl_req_buffer_len;
-	chip->ctrl_req_buffer = usb_buffer_alloc(chip->dev, 
+	chip->ctrl_req_buffer = usb_alloc_coherent(chip->dev, 
 						 chip->ctrl_urb->transfer_buffer_length,
 						 GFP_KERNEL, 
 						 &chip->ctrl_urb->transfer_dma);
 	if (chip->ctrl_req_buffer == NULL) {
-		printk(KERN_WARNING"snd_hdj_chip_create(): usb_buffer_alloc() failed\n");
+		printk(KERN_WARNING"snd_hdj_chip_create(): usb_alloc_coherent() failed\n");
 		return err;
 	}
 
