@@ -1660,12 +1660,20 @@ static int snd_hdj_chip_create(struct usb_device *dev,
 		/* let the kernel option override custom id */
 		strncpy(card_id,id[idx],sizeof(card_id)-1);
 	}
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,30) )
+    err = snd_card_create(index[idx], card_id/*id[idx]*/, THIS_MODULE, 0, &card );
+    if (err) {
+        snd_printk(KERN_WARNING "snd_hdj_chip_create(): cannot create card instance %d\n", idx);
+        return err;
+    }
+#else
 	card = snd_card_new(index[idx], card_id/*id[idx]*/, THIS_MODULE, 0);
 	if (card == NULL) {
 		snd_printk(KERN_WARNING "snd_hdj_chip_create(): cannot create card instance %d\n", idx);
 		return -ENOMEM;
 	}
-	
+#endif
+
 	/* save the index, so people who have the card can reference the chip */
 	card->private_data = (void*)(unsigned long)idx;
 
