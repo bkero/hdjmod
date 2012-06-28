@@ -86,10 +86,9 @@ int					netlink_unit = NETLINK_UNIT_INVALID_VALUE;
 /* table of devices that work with this driver- look for vendor specific interfaces with
  *  our VID */
 static struct usb_device_id hdj_table [] = {
-	{ .match_flags = (USB_DEVICE_ID_MATCH_DEVICE),
-		.idVendor = (USB_HDJ_VENDOR_ID)	},
-	{ .match_flags = (USB_DEVICE_ID_MATCH_INT_CLASS),
-	.bInterfaceClass = USB_CLASS_VENDOR_SPEC},
+	{ .match_flags = (USB_DEVICE_ID_MATCH_VENDOR | USB_DEVICE_ID_MATCH_INT_CLASS),
+		.idVendor = (USB_HDJ_VENDOR_ID),
+		.bInterfaceClass = USB_CLASS_VENDOR_SPEC },
 	{ }					/* Terminating entry */
 };
 MODULE_DEVICE_TABLE(usb, hdj_table);
