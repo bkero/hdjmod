@@ -63,7 +63,8 @@
 
 unsigned long channel_list_initialized = 0;
 struct midi_channel_elem channel_list[NUM_MIDI_CHANNELS];
-spinlock_t channel_list_lock = SPIN_LOCK_UNLOCKED;
+/* spinlock_t channel_list_lock = SPIN_LOCK_UNLOCKED; */
+DEFINE_SPINLOCK(channel_list_lock);
 
 static struct usb_protocol_ops snd_hdjmidi_standard_ops = {
 	.input = snd_hdjmidi_standard_input,
