@@ -25,6 +25,7 @@
 #include <linux/kernel.h>
 #include <linux/version.h>	/* For LINUX_VERSION_CODE */
 #include <linux/errno.h>
+#include <linux/slab.h>
 #include <linux/types.h>
 #include <linux/bitops.h>
 #include <linux/interrupt.h>
