@@ -1,0 +1,7 @@
+*.patch
+*.swp
+*.cmd
+*.o
+modules.order
+*.orig
+*.rej
