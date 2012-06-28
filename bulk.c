@@ -3066,7 +3066,8 @@ int hdj_create_bulk_interface(struct snd_hdj_chip* chip,
 		goto hdj_create_bulk_interface_error;
 	}
 	/* allocate the buffer for bulk_out_urb */
-	init_MUTEX(&ubulk->bulk_out_buffer_mutex);
+	/* init_MUTEX(&ubulk->bulk_out_buffer_mutex); */
+    sema_init(&ubulk->bulk_out_buffer_mutex, 1);
 	
 	ubulk->bulk_out_buffer =
 		usb_alloc_coherent(ubulk->chip->dev, ubulk->bulk_out_size,
@@ -3605,7 +3606,8 @@ static int init_output_control_state(struct usb_hdjbulk *ubulk)
 		return -EINVAL;
 	}
 
-	init_MUTEX(&ubulk->output_control_mutex);
+	/* init_MUTEX(&ubulk->output_control_mutex); */
+    sema_init(&ubulk->output_control_mutex, 1);
 	init_completion(&ubulk->output_control_completion);
 
 	/* Every product here except the Steel targets HID.  Since the steel does not target HID, we don't
@@ -3859,8 +3861,9 @@ int hdjbulk_init_dj_console(struct usb_hdjbulk *ubulk)
 	u16 value = 0;
 	struct hdj_console_context *dc = ((struct hdj_console_context *)ubulk->device_context);
 
-	init_MUTEX(&dc->device_config_mutex);
-	
+	/* init_MUTEX(&dc->device_config_mutex); */
+	sema_init(&dc->device_config_mutex, 1);
+
 	ret = hdjbulk_init_common_context(ubulk,&ubulk->hdj_common);
 	if (ret!=0) {
 		printk(KERN_WARNING"%s() hdjbulk_init_common_context failed, rc:%d",
@@ -4137,7 +4140,8 @@ int hdjbulk_init_dj_steel(struct usb_hdjbulk *ubulk)
 
 	spin_lock_init(&dc->bulk_buffer_lock);
 	init_completion(&dc->bulk_request_completion);
-	init_MUTEX(&dc->bulk_request_mutex);
+	/* init_MUTEX(&dc->bulk_request_mutex); */
+    sema_init(&dc->bulk_request_mutex, 1);
 
 	if ((ret = init_continuous_reader(ubulk))!=0) {
 		printk(KERN_WARNING"%s() init_continuous_reader() failed, rc:%d\n",

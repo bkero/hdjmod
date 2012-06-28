@@ -66,7 +66,9 @@ MODULE_PARM_DESC(index, "Index value for the Hercules DJ Series adapter.");
 module_param_array(id, charp, NULL, 0444);
 MODULE_PARM_DESC(id, "ID string for the Hercules DJ Series adapter.");
 
-static DECLARE_MUTEX(register_mutex);
+/* static DECLARE_MUTEX(register_mutex); */
+static DEFINE_SEMAPHORE(register_mutex);
+
 static struct snd_hdj_chip *usb_chip[SNDRV_CARDS];
 
 /* reference count for the socket */
@@ -1690,7 +1692,8 @@ static int snd_hdj_chip_create(struct usb_device *dev,
 	chip->card = card;
 	chip->product_code = product_code;
 
-	init_MUTEX(&chip->vendor_request_mutex);
+	/* init_MUTEX(&chip->vendor_request_mutex); */
+    sema_init(&chip->vendor_request_mutex, 1);
 
 	/* initialise the atomic variables */
 	atomic_set(&chip->locked_io, 0);
@@ -1705,7 +1708,8 @@ static int snd_hdj_chip_create(struct usb_device *dev,
 	INIT_LIST_HEAD(&chip->bulk_list);
 	chip->usb_id = USB_ID(le16_to_cpu(dev->descriptor.idVendor),
 			      le16_to_cpu(dev->descriptor.idProduct));
-	init_MUTEX(&chip->netlink_list_mutex);
+	/* init_MUTEX(&chip->netlink_list_mutex); */
+    sema_init(&chip->vendor_request_mutex, 1);
 	INIT_LIST_HEAD(&chip->netlink_registered_processes);
 	
 	/* fill in DJ capabilities for this device */

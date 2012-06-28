@@ -680,7 +680,8 @@ static int controller_output_init(struct controller_output_hid *controller_state
 	
 	/* this buffer and URB below are for general control requests, like changing the
 	 *  mouse setting or setting LEDs */
-	init_MUTEX(&controller_state->output_control_ctl_mutex);
+	/* init_MUTEX(&controller_state->output_control_ctl_mutex); */
+    sema_init(&controller_state->output_control_ctl_mutex, 1);
 	init_completion(&controller_state->output_control_ctl_completion);
 	controller_state->output_control_ctl_req = usb_alloc_coherent(ep->umidi->chip->dev, 
 							sizeof(*(controller_state->output_control_ctl_req)),
