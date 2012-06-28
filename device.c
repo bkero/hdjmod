@@ -36,6 +36,9 @@
 #include <linux/netlink.h>
 #include <net/sock.h>
 #include <linux/usb.h>
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) )
+#include <linux/semaphore.h>
+#endif
 #if ( LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,24) )
 #include <sound/driver.h>
 #endif
@@ -66,7 +69,11 @@ MODULE_PARM_DESC(index, "Index value for the Hercules DJ Series adapter.");
 module_param_array(id, charp, NULL, 0444);
 MODULE_PARM_DESC(id, "ID string for the Hercules DJ Series adapter.");
 
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) )
+static DEFINE_SEMAPHORE(register_mutex);
+#else
 static DECLARE_MUTEX(register_mutex);
+#endif
 static struct snd_hdj_chip *usb_chip[SNDRV_CARDS];
 
 /* reference count for the socket */
@@ -1700,7 +1707,11 @@ static int snd_hdj_chip_create(struct usb_device *dev,
 	chip->card = card;
 	chip->product_code = product_code;
 
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) )
+	sema_init(&chip->vendor_request_mutex,1);
+#else
 	init_MUTEX(&chip->vendor_request_mutex);
+#endif
 
 	/* initialise the atomic variables */
 	atomic_set(&chip->locked_io, 0);
@@ -1715,7 +1726,11 @@ static int snd_hdj_chip_create(struct usb_device *dev,
 	INIT_LIST_HEAD(&chip->bulk_list);
 	chip->usb_id = USB_ID(le16_to_cpu(dev->descriptor.idVendor),
 			      le16_to_cpu(dev->descriptor.idProduct));
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) )
+	sema_init(&chip->netlink_list_mutex,1);
+#else
 	init_MUTEX(&chip->netlink_list_mutex);
+#endif
 	INIT_LIST_HEAD(&chip->netlink_registered_processes);
 	
 	/* fill in DJ capabilities for this device */

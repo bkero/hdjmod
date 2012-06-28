@@ -34,6 +34,9 @@
 #include <linux/usb.h>
 #include <linux/delay.h>
 #include <linux/version.h>	/* For LINUX_VERSION_CODE */
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) )
+#include <linux/semaphore.h>
+#endif
 #if ( LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,24) )
 #include <sound/driver.h>
 #endif
@@ -3077,7 +3080,11 @@ int hdj_create_bulk_interface(struct snd_hdj_chip* chip,
 		goto hdj_create_bulk_interface_error;
 	}
 	/* allocate the buffer for bulk_out_urb */
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) )
+	sema_init(&ubulk->bulk_out_buffer_mutex,1);
+#else
 	init_MUTEX(&ubulk->bulk_out_buffer_mutex);
+#endif
 	
 	ubulk->bulk_out_buffer =
 #if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) )
@@ -3621,7 +3628,11 @@ static int init_output_control_state(struct usb_hdjbulk *ubulk)
 		return -EINVAL;
 	}
 
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) )
+	sema_init(&ubulk->output_control_mutex,1);
+#else
 	init_MUTEX(&ubulk->output_control_mutex);
+#endif
 	init_completion(&ubulk->output_control_completion);
 
 	/* Every product here except the Steel targets HID.  Since the steel does not target HID, we don't
@@ -3893,7 +3904,11 @@ int hdjbulk_init_dj_console(struct usb_hdjbulk *ubulk)
 	u16 value = 0;
 	struct hdj_console_context *dc = ((struct hdj_console_context *)ubulk->device_context);
 
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) )
+	sema_init(&dc->device_config_mutex,1);
+#else
 	init_MUTEX(&dc->device_config_mutex);
+#endif
 	
 	ret = hdjbulk_init_common_context(ubulk,&ubulk->hdj_common);
 	if (ret!=0) {
@@ -4171,7 +4186,11 @@ int hdjbulk_init_dj_steel(struct usb_hdjbulk *ubulk)
 
 	spin_lock_init(&dc->bulk_buffer_lock);
 	init_completion(&dc->bulk_request_completion);
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) )
+	sema_init(&dc->bulk_request_mutex,1);
+#else
 	init_MUTEX(&dc->bulk_request_mutex);
+#endif
 
 	if ((ret = init_continuous_reader(ubulk))!=0) {
 		printk(KERN_WARNING"%s() init_continuous_reader() failed, rc:%d\n",

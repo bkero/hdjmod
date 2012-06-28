@@ -35,6 +35,9 @@
 #include <linux/module.h>
 #include <linux/usb.h>
 #include <linux/kthread.h>
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) )
+#include <linux/semaphore.h>
+#endif
 #include <asm/byteorder.h>
 #include <asm/atomic.h>
 #if ( LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,24) )
@@ -735,7 +738,11 @@ static int controller_output_init(struct controller_output_hid *controller_state
 	
 	/* this buffer and URB below are for general control requests, like changing the
 	 *  mouse setting or setting LEDs */
+#if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) )
+	sema_init(&controller_state->output_control_ctl_mutex, 1);
+#else
 	init_MUTEX(&controller_state->output_control_ctl_mutex);
+#endif
 	init_completion(&controller_state->output_control_ctl_completion);
 	controller_state->output_control_ctl_req = 
 #if ( LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36) )
