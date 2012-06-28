@@ -28,7 +28,8 @@ ifeq ($(DEBUG),y)
   # "-O" is needed to expand inlines
   DEBFLAGS = -O0 -g -DDEBUG 
 else
-  DEBFLAGS = -O2
+  #DEBFLAGS = -O2
+  DEBFLAGS = -Os
 endif
 
 EXTRA_CFLAGS += $(DEBFLAGS) -I$(LDDINC) -Wall -Wshadow -Wuninitialized
