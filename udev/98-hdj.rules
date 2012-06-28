@@ -1,0 +1,27 @@
+# Hercules DJ Control Steel
+ACTION=="add", GOTO="add_rules"
+ACTION=="remove", GOTO="remove_rules"
+GOTO="the_end"
+
+LABEL="add_rules"
+KERNEL=="hdjbulk*", MODE="666", ACTION=="add", RUN+="/usr/share/hercules-hdj_mod/add"
+GOTO="the_end"
+
+LABEL="remove_rules"
+# DJ Console
+SUBSYSTEM=="usb", ENV{PRODUCT}=="6f8/b000/100", ENV{DEVTYPE}=="usb_device", RUN+="/usr/share/hercules-hdj_mod/remove"
+# DJ Console Mk2
+SUBSYSTEM=="usb", ENV{PRODUCT}=="6f8/b100/100", ENV{DEVTYPE}=="usb_device", RUN+="/usr/share/hercules-hdj_mod/remove"
+# DJ Console Rmx
+SUBSYSTEM=="usb", ENV{PRODUCT}=="6f8/b101/100", ENV{DEVTYPE}=="usb_device", RUN+="/usr/share/hercules-hdj_mod/remove"
+# DJ Control Steel
+SUBSYSTEM=="usb", ENV{PRODUCT}=="6f8/b102/100", ENV{DEVTYPE}=="usb_device", RUN+="/usr/share/hercules-hdj_mod/remove"
+# DJ Control MP3
+SUBSYSTEM=="usb", ENV{PRODUCT}=="6f8/d000/230", ENV{DEVTYPE}=="usb_device", RUN+="/usr/share/hercules-hdj_mod/remove"
+SUBSYSTEM=="usb", ENV{PRODUCT}=="6f8/d001/230", ENV{DEVTYPE}=="usb_device", RUN+="/usr/share/hercules-hdj_mod/remove"
+SUBSYSTEM=="usb", ENV{PRODUCT}=="6f8/d001/240", ENV{DEVTYPE}=="usb_device", RUN+="/usr/share/hercules-hdj_mod/remove"
+SUBSYSTEM=="usb", ENV{PRODUCT}=="6f8/d001/250", ENV{DEVTYPE}=="usb_device", RUN+="/usr/share/hercules-hdj_mod/remove"
+SUBSYSTEM=="usb", ENV{PRODUCT}=="6f8/d001/260", ENV{DEVTYPE}=="usb_device", RUN+="/usr/share/hercules-hdj_mod/remove"
+GOTO="the_end"
+
+LABEL="the_end"

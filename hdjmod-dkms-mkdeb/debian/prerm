@@ -1,0 +1,41 @@
+#!/bin/sh
+
+module_version=0
+driver_minor_version=0
+NAME=MODULE_NAME
+VERSION=MODULE_VERSION
+target_install_dir="/usr/share/hercules-hdj_mod"
+udev_install_dir="/etc/udev/rules.d"
+udev_file_source="$(dirname $0)/udev"
+
+module_version_file="module_version"
+
+set -e
+
+case "$1" in
+    remove|upgrade|deconfigure)
+      if [  "`dkms status -m $NAME`" ]; then
+         module_version=`cat $target_install_dir/$module_version_file | tee true`
+         dkms remove -m $NAME -v $VERSION --all
+         if [ "$module_version" = "$VERSION" ]; then
+            rm $udev_install_dir/98-hdj.rules | true
+            rm -rf $target_install_dir | true
+            rmmod hdj_mod | true
+         fi
+      fi
+    ;;
+
+    failed-upgrade)
+    ;;
+
+    *)
+        echo "prerm called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0
+
+

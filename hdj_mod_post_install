@@ -1,0 +1,14 @@
+#!/bin/bash
+target_install_dir="/usr/share/hercules-hdj_mod"
+udev_install_dir="/etc/udev/rules.d"
+udev_file_source="$(dirname $0)/udev"
+module_version_file="$(dirname $0)/module_version"
+
+mkdir -p $target_install_dir
+cp $module_version_file $target_install_dir
+cp $udev_file_source/98-hdj.rules $udev_install_dir
+chmod 644 $udev_install_dir/98-hdj.rules
+cp $udev_file_source/add $target_install_dir
+cp $udev_file_source/remove $target_install_dir
+chmod 755 $target_install_dir/add
+chmod 755 $target_install_dir/remove

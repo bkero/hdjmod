@@ -1,0 +1,9 @@
+#!/bin/bash
+target_install_dir="/usr/share/hercules-hdj_mod"
+udev_install_dir="/etc/udev/rules.d"
+udev_file_source="$(dirname $0)/udev"
+
+# this is now done in the deb and rpm pre remove scripts
+#rm $udev_install_dir/98-hdj.rules | true
+#rm -rf $target_install_dir | true
+#rmmod hdj_mod | true

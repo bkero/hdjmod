@@ -1,0 +1,11 @@
+hdjmod-dkms (1.28) hardy; urgency=low
+
+  * Fixed 64 bit compilation issue.
+
+ -- Philip Lukidis <plukidis@guillemot.com>  Tue, 27 Jan 2009 09:23:01 -0500
+
+hdjmod-dkms (1.27) hardy; urgency=low
+
+  * Initial release.
+
+ -- Philip Lukidis <plukidis@guillemot.com>  Tue, 13 Jan 2009 10:19:46 -0500
